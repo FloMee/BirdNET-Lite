@@ -14,6 +14,7 @@ import librosa
 import numpy as np
 import math
 import time
+import glob
 
 def loadModel():
 
@@ -166,19 +167,25 @@ def analyzeAudioData(chunks, lat, lon, week, sensitivity, overlap, interpreter):
 
     return detections
 
-def writeResultsToFile(detections, min_conf, path):
+def writeResultsToFile(detections, min_conf, path, filepath):
 
     print('WRITING RESULTS TO', path, '...', end=' ')
     rcnt = 0
-    with open(path, 'w') as rfile:
-        rfile.write('Start (s);End (s);Scientific name;Common name;Confidence\n')
+    with open(path, 'a') as rfile:
+        #rfile.write('Start (s);End (s);Scientific name;Common name;Confidence\n')
         for d in detections:
             for entry in detections[d]:
                 if entry[1] >= min_conf and (entry[0] in WHITE_LIST or len(WHITE_LIST) == 0):
-                    rfile.write(d + ';' + entry[0].replace('_', ';') + ';' + str(entry[1]) + '\n')
+                    rfile.write(filepath + ';' + d + ';' + entry[0].replace('_', ';') + ';' + str(entry[1]) + '\n')
                     rcnt += 1
     print('DONE! WROTE', rcnt, 'RESULTS.')
 
+def initResultsFile(path):
+    print("Initialize {} as result file".format(path))
+    with open(path, "w") as file:
+        file.write('Filepath;Start (s);End (s);Scientific name;Common name;Confidence\n')
+    return 0
+    
 def main():
 
     global WHITE_LIST
@@ -206,18 +213,24 @@ def main():
     else:
         WHITE_LIST = []
 
+    dir = args.i + "*.wav"
 
-    # Read audio data
-    audioData = readAudioData(args.i, args.overlap)
-
-    # Process audio data and get detections
+    # variables
     week = max(1, min(args.week, 48))
     sensitivity = max(0.5, min(1.0 - (args.sensitivity - 1.0), 1.5))
-    detections = analyzeAudioData(audioData, args.lat, args.lon, week, sensitivity, args.overlap, interpreter)
-
-    # Write detections to output file
     min_conf = max(0.01, min(args.min_conf, 0.99))
-    writeResultsToFile(detections, min_conf, args.o)
+
+    # create Resultsfile
+    initResultsFile()
+   
+    for file in glob.glob(dir):
+        # Read audio data
+        audioData = readAudioData(file, args.overlap)
+        # Process audio data and get detections        
+        detections = analyzeAudioData(audioData, args.lat, args.lon, week, sensitivity, args.overlap, interpreter)
+
+        # Write detections to output file        
+        writeResultsToFile(detections, min_conf, args.o, file)
 
 if __name__ == '__main__':
 
