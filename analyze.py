@@ -213,17 +213,15 @@ def main():
     else:
         WHITE_LIST = []
 
-    dir = args.i + "*.wav"
-
-    # variables
+    # set variables
     week = max(1, min(args.week, 48))
     sensitivity = max(0.5, min(1.0 - (args.sensitivity - 1.0), 1.5))
     min_conf = max(0.01, min(args.min_conf, 0.99))
 
     # create Resultsfile
-    initResultsFile()
+    initResultsFile(args.o)
    
-    for file in glob.glob(dir):
+    for file in glob.glob(args.i):
         # Read audio data
         audioData = readAudioData(file, args.overlap)
         # Process audio data and get detections        
@@ -237,5 +235,5 @@ if __name__ == '__main__':
     main()
 
     # Example calls
-    # python3 analyze.py --i 'example/XC558716 - Soundscape.mp3' --lat 35.4244 --lon -120.7463 --week 18
-    # python3 analyze.py --i 'example/XC563936 - Soundscape.mp3' --lat 47.6766 --lon -122.294 --week 11 --overlap 1.5 --min_conf 0.25 --sensitivity 1.25 --custom_list 'example/custom_species_list.txt'
+    # python3 analyze.py --i '/absolute/path/to/your/soundfile/directory/*.wav' --lat 35.4244 --lon -120.7463 --week 18
+    # python3 analyze.py --i 'relative/path/to/your/soundfile/directory/*.mp3' --lat 47.6766 --lon -122.294 --week 11 --overlap 1.5 --min_conf 0.25 --sensitivity 1.25 --custom_list 'example/custom_species_list.txt'
