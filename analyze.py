@@ -15,6 +15,7 @@ import numpy as np
 import math
 import time
 import glob
+import os
 
 def loadModel():
 
@@ -219,7 +220,8 @@ def main():
     min_conf = max(0.01, min(args.min_conf, 0.99))
 
     # create Resultsfile
-    initResultsFile(args.o)
+    if not os.path.exists(args.o):
+        initResultsFile(args.o)
    
     for file in glob.glob(args.i):
         # Read audio data
